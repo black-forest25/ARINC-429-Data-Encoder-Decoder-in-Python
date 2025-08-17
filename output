@@ -1,0 +1,66 @@
+ARINC 429 Encoder/Decoder Example
+==================================================
+Test Case: Encoding altitude data
+Label 0o010 (octal 010) represents altitude data
+Altitude value: 1000 feet
+
+ Encoding Process
+Input Parameters:
+label =8, (octal) + 0o10 =8 decimal
+ data =1000
+ ssm  =0
+ sdi  =0
+
+Step 1 - Convert to binary:
+  label 8 -> '00001000' (8 bits)
+  label reversed -> '00010000' (ARINC 429 LSB first)
+  data 1000 -> '0000000001111101000' (19 bits)
+  ssm 0 -> '00' (2 bits)
+  sdi 0 -> '00' (2 bits)
+
+Step 2 - Combine fields:
+  Combined (no parity): '0001000000000000011111010000000' (31 bits)
+    Bits 1-8  (Label): '00010000'
+    Bits 9-27 (Data):  '0000000001111101000'
+    Bits 28-29 (SSM):  '00'
+    Bits 30-31 (SDI):  '00'
+
+Step 3 - Calculate parity:
+  Number of 1s in first 31 bits: 7
+  7 is odd
+  For odd parity, need to add: '0'
+  Final 32-bit word: '00010000000000000111110100000000'
+
+Step 4 - Convert to integer:
+  Binary: 0b10000000000000111110100000000
+  Decimal: 268467456
+  Hexadecimal: 0x10007d00
+
+==================================================
+
+=== DECODING PROCESS ===
+Input: 268467456 (decimal) = 0x10007d00 (hex)
+32-bit binary: '00010000000000000111110100000000'
+
+Step 1 - Extract fields:
+  Bits 1-8  (Label reversed): '00010000'
+  Label normal order: '00001000' = 8 decimal = 0o10 octal
+  Bits 9-27 (Data): '0000000001111101000' = 1000 decimal
+  Bits 28-29 (SSM): '00' = 0 decimal
+  Bits 30-31 (SDI): '00' = 0 decimal
+  Bit 32 (Parity): '0' = 0 decimal
+
+Step 2 - Verify parity:
+  1s in first 31 bits: 7
+  Expected parity: 0
+  Actual parity: 0
+  Parity valid: True
+
+Decoded result: {'label': 8, 'data': 1000, 'ssm': 0, 'sdi': 0, 'parity': 0, 'parity_valid': True}
+
+==================================================
+SUMMARY:
+Original input: label=0o10, data=1000
+Encoded word: 268467456 (decimal), 0x10007d00 (hex)
+Decoded output: label=0o10, data=1000
+Round-trip successful: True
